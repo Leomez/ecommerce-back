@@ -17,15 +17,17 @@ export class ProductService {
 
   async findOne(id: number) {
     const product = await this.prisma.product.findUnique({ where: { id } });
-    if (!product) throw new NotFoundException('Product not found');
+    if (!product) throw new NotFoundException(`prducto con id ${id} no encontrado`);
     return product;
   }
 
-  update(id: number, data: UpdateProductDto) {
+  async update(id: number, data: UpdateProductDto) {
+    await this.findOne(id); // Verifica si el producto existe
     return this.prisma.product.update({ where: { id }, data });
   }
 
-  remove(id: number) {
+  async remove(id: number) {
+    await this.findOne(id); // Verifica si el producto existe
     return this.prisma.product.delete({ where: { id } });
   }
 }
