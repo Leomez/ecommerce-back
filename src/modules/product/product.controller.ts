@@ -31,4 +31,20 @@ export class ProductController {
   remove(@Param('id') id: string) {
     return this.productService.remove(+id);
   }
+  @Patch(':id/categorias')
+  async addCategories(
+    @Param('id') id: string,
+    @Body('categoryIds') categoryIds: number[]
+  ) {
+    return this.productService.addCategoriesToProduct(+id, categoryIds);
+  }
+
+  @Delete(':id/categorias/:categoryId')
+  async removeCategory(
+    @Param('id') id: string,
+    @Param('categoryId') categoryId: string
+  ) {
+    return this.productService.removeCategoryFromProduct(+id, +categoryId);
+  }
+  //Uso: Hacer una petición DELETE a /productos/{id}/categorias/{categoryId} para quitar la categoría {categoryId} del producto {id}.
 }

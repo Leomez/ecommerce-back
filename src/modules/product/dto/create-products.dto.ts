@@ -20,5 +20,6 @@ export class CreateProductDto {
     @IsArray()
     @ValidateNested({ each: true })
     @IsOptional()
-    categories?: string[];
+    @IsNumber({}, { each: true }) // 👈 aseguramos que sean ids de categorías
+    categoryIds?: number[];
 }

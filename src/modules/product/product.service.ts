@@ -5,14 +5,38 @@ import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
-  create(data: CreateProductDto) {
-    return this.prisma.product.create({ data });
+  async create(data: CreateProductDto) {
+    const { categoryIds, ...rest } = data;
+
+    return this.prisma.product.create({
+      data: {
+        ...rest,
+        categories: categoryIds && categoryIds.length > 0
+          ? {
+            create: categoryIds.map((categoryId) => ({
+              category: { connect: { id: categoryId } }
+            })),
+          }
+          : undefined,
+      },
+      include: { categories: true },
+    });
   }
 
   findAll() {
-    return this.prisma.product.findMany();
+    return this.prisma.product.findMany(
+      {
+        include: {
+          categories: {
+            include: {
+              category: true, // trae los datos completos de la categoría
+            },
+          },
+        },
+      }
+    );
   }
 
   async findOne(id: number) {
@@ -30,4 +54,26 @@ export class ProductService {
     await this.findOne(id); // Verifica si el producto existe
     return this.prisma.product.delete({ where: { id } });
   }
+
+  async addCategoriesToProduct(productId: number, categoryIds: number[]) {
+    const data = categoryIds.map(categoryId => ({
+      productId,
+      categoryId,
+    }));
+    // Crea las relaciones en la tabla intermedia
+    return this.prisma.productCategory.createMany({
+      data,
+      skipDuplicates: true, // evita duplicados si ya existe la relación
+    });
+  }
+
+  async removeCategoryFromProduct(productId: number, categoryId: number) {
+    return this.prisma.productCategory.delete({
+      where: {
+        productId_categoryId: { productId, categoryId },
+      },
+    });
+  }
+
+
 }

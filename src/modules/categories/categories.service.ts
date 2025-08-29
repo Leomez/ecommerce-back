@@ -5,8 +5,9 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
+  // CRUD básico para categorías
   create(data: CreateCategoryDto) {
     return this.prisma.category.create({ data });
   }
@@ -34,4 +35,20 @@ export class CategoriesService {
   remove(id: number) {
     return this.prisma.category.delete({ where: { id } });
   }
+
+  // Métodos para gestionar la relación entre categorías y productos
+  async addProductToCategory(categoryId: number, productId: number) {
+    await this.prisma.productCategory.update({
+      where: { productId_categoryId: { categoryId, productId } },
+      data: { categoryId, productId },      
+    });      
+  }
+
+  async removeProductFromCategory(categoryId: number, productId: number) {
+    await this.prisma.productCategory.delete({
+      where: { productId_categoryId: { categoryId, productId } },
+    });
+  }
 }
+
+
